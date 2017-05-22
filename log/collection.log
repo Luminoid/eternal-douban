@@ -1,0 +1,5 @@
+2017-05-23 00:39:11 - eternal-douban - DEBUG    - Test logger.py [DEBUG]
+2017-05-23 00:39:12 - eternal-douban - INFO     - Test logger.py [INFO]
+2017-05-23 00:39:12 - eternal-douban - WARNING  - Test logger.py [WARNING]
+2017-05-23 00:39:12 - eternal-douban - ERROR    - Test logger.py [ERROR]
+2017-05-23 00:39:12 - eternal-douban - CRITICAL - Test logger.py [CRITICAL]

@@ -1,7 +1,10 @@
+import os
 import sqlite3
 
 
 def initialize_db():
+    if os.path.exists('../db/collection.db'):
+        os.remove('../db/collection.db')
     conn = sqlite3.connect('../db/collection.db')
     curs = conn.cursor()
     curs.execute('''

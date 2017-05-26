@@ -21,7 +21,7 @@ def get_bs(session, url, referer):
     #     'http': 'http://10.10.1.10:3128',
     #     'https': 'http://10.10.1.10:1080',
     # }
-    # time.sleep(1)
+    time.sleep(1)
     res = session.get(url, headers=headers)
     if res.status_code == requests.codes.ok:
         bs_obj = BeautifulSoup(res.text, "html.parser")

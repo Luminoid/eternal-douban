@@ -1,5 +1,7 @@
 import re
 import math
+import sys
+import traceback
 from log.logger import get_logger
 from downloader.getPage import get_bs
 from page_processor.parseBookPage import parse_book_page
@@ -44,6 +46,7 @@ def get_book_info(session, collection, user_url):
                 parse_book_page(bs, book)
             except Exception as e:
                 logger = get_logger()
-                logger.warning(url)
-                logger.warning(e)
+                logger.warning('url: %s error: %s' % (url, e))
+                traceback.print_exc()
+                sys.exit(0)
     return collection

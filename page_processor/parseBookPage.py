@@ -9,6 +9,9 @@ def try_except(success):
         return success()
     except AttributeError:
         return None
+    except IndexError:
+        # TODO: Mismatching scraping can be missed here
+        return None
 
 
 def get_span_val(tag, name):
@@ -21,15 +24,18 @@ def get_span_val(tag, name):
 
 def get_list_val(tag):
     list_val = ''
-    ptr = tag
-    while ptr.next_sibling.name != 'br':
-        if ptr.name == 'a':
-            list_val += ptr.get_text().strip()
+    ptr = tag.next_sibling
+    while ptr is not None and not (hasattr(ptr, 'name') and ptr.name == 'br'):
         if type(ptr) is bs4.element.NavigableString:
             list_val += ptr.strip()
+        elif hasattr(ptr, 'name') and ptr.name == 'a':
+            list_val += ptr.get_text().strip()
         ptr = ptr.next_sibling
+
     list_val = re.sub(' *\n *', ' ', list_val)
     list_val = re.sub('/', ' / ', list_val)
+    if list_val[0] == ':':
+        list_val = list_val[1:]
     return list_val
 
 
@@ -73,9 +79,9 @@ def parse_book_page(bs, book):
 
     related_info = bs.select("#content .related_info")[0]
     summary = try_except(lambda: related_info.find("span", text=re.compile("内容简介"))
-                         .parent.next_sibling.next_sibling.select(".intro")[0].findAll("p"))
+                         .parent.next_sibling.next_sibling.find("div", {"class": "intro"}).findAll("p"))
     author_intro = try_except(lambda: related_info.find("span", text=re.compile("作者简介"))
-                              .parent.next_sibling.next_sibling.select("span.all .intro")[0].findAll("p"))
+                              .parent.next_sibling.next_sibling.find("div", {"class": "intro"}).findAll("p"))
     raw_catalog = try_except(lambda: related_info.find("span", text=re.compile("目录")).parent.
                              next_sibling.next_sibling.next_sibling.next_sibling)
     if raw_catalog is not None:

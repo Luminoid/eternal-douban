@@ -8,7 +8,7 @@ logger = logging.getLogger('eternal-douban')
 def initialize_logger():
     formatter = logging.Formatter(fmt="%(asctime)s - %(name)s - %(levelname)-8s - %(message)s",
                                   datefmt='%Y-%m-%d %H:%M:%S')
-    file_handler = logging.FileHandler("collection.log")
+    file_handler = logging.FileHandler("../log/collection.log")
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(formatter)
     stream_handler = logging.StreamHandler(sys.stderr)

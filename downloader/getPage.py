@@ -1,8 +1,8 @@
 import requests
 import re
 import time
-import logging
 from bs4 import BeautifulSoup
+from log.logger import get_logger
 
 
 # TODO: proxy
@@ -21,12 +21,12 @@ def get_bs(session, url, referer):
     #     'http': 'http://10.10.1.10:3128',
     #     'https': 'http://10.10.1.10:1080',
     # }
+    # time.sleep(1)
     res = session.get(url, headers=headers)
     if res.status_code == requests.codes.ok:
-        time.sleep(1)
         bs_obj = BeautifulSoup(res.text, "html.parser")
         return bs_obj
     else:
-        logging.basicConfig(filename='../log/collection.log')
-        logging.warning('Status ERROR! url: %s status_code: %s' % url, res.status_code)
+        logger = get_logger()
+        logger.error('Status ERROR! url: %s status_code: %s' % (url, res.status_code))
         return None

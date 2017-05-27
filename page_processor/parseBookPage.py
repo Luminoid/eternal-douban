@@ -74,23 +74,35 @@ def generate_book(item, status):
 
 def parse_book_page(bs, book):
     info = bs.find(id="info")
-    author = try_except(lambda: info.find("span", text=re.compile("作者")))
-    translator = try_except(lambda: info.find("span", text=re.compile("译者")))
-
     related_info = bs.select("#content .related_info")[0]
+    # author
+    author = try_except(lambda: info.find("span", text=re.compile("作者")))
+    # translator
+    translator = try_except(lambda: info.find("span", text=re.compile("译者")))
+    # summary
     summary = try_except(lambda: related_info.find("span", text=re.compile("内容简介"))
                          .parent.next_sibling.next_sibling.find("div", {"class": "intro"}).findAll("p"))
+    # author intro
     author_intro = try_except(lambda: related_info.find("span", text=re.compile("作者简介"))
                               .parent.next_sibling.next_sibling.find("div", {"class": "intro"}).findAll("p"))
-    raw_catalog = try_except(lambda: related_info.find("span", text=re.compile("目录")).parent.
-                             next_sibling.next_sibling.next_sibling.next_sibling)
+    # catalog
+    raw_catalog = try_except(lambda: related_info.find("span", text=re.compile(
+        "目录")).parent.next_sibling.next_sibling.next_sibling.next_sibling)
     if raw_catalog is not None:
-        catalog = [elem.strip() for elem in raw_catalog.contents if type(elem) is bs4.element.NavigableString]
-        if catalog[-1] == ')' and catalog[-2] == '· · · · · ·     (':
-            catalog = catalog[:-2]
+        catalog = [elem.strip() if type(elem) is bs4.element.NavigableString else elem.get_text() for elem in
+                   raw_catalog.contents]
+        catalog = '\n'.join(catalog)
+        catalog = re.sub(r' *\n+ *', '\n', catalog)
+        catalog = catalog.split('\n')
+        catalog = '\n'.join(catalog)
+        btn_index = catalog.find('· · · · · ·')
+        if btn_index > 0:
+            catalog = catalog[:btn_index]
+        if catalog[-1] == '\n':
+            catalog = catalog[:-1]
     else:
         catalog = None
-
+    # image
     img_loc = bs.find(id="mainpic").a["href"]
     if img_loc.find('update_image') < 0:
         img_id = img_loc.split("/")[-1]
@@ -98,6 +110,7 @@ def parse_book_page(bs, book):
     else:
         img_id = None
 
+    # info
     book.isbn13 = get_span_val(info, "ISBN")
     book.title = bs.find(id="wrapper").h1.span.get_text()
     book.origin_title = get_span_val(info, "原作名")
@@ -111,7 +124,7 @@ def parse_book_page(bs, book):
     book.binding = get_span_val(info, "装帧")
     book.image = "img/book/%s" % img_id if img_id is not None else None
     book.summary = '\n'.join(p.get_text() for p in list(summary)) if summary is not None else None
-    book.catalog = '\n'.join(catalog) if catalog is not None else None
+    book.catalog = catalog
     book.author_intro = '\n'.join(p.get_text() for p in list(author_intro)) \
         if author_intro is not None else None
     book.average_rating = try_except(lambda: bs.select("#interest_sectl strong[property=\"v:average\"]")[0].get_text())

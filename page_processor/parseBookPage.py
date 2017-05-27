@@ -1,5 +1,6 @@
 import bs4
 import re
+import os
 from urllib.request import urlretrieve
 from model.book import Book
 
@@ -81,10 +82,10 @@ def parse_book_page(bs, book):
     translator = try_except(lambda: info.find("span", text=re.compile("译者")))
     # summary
     summary = try_except(lambda: related_info.find("span", text=re.compile("内容简介"))
-                         .parent.next_sibling.next_sibling.find("div", {"class": "intro"}).findAll("p"))
+                         .parent.next_sibling.next_sibling.findAll("div", {"class": "intro"})[-1].findAll("p"))
     # author intro
     author_intro = try_except(lambda: related_info.find("span", text=re.compile("作者简介"))
-                              .parent.next_sibling.next_sibling.find("div", {"class": "intro"}).findAll("p"))
+                              .parent.next_sibling.next_sibling.findAll("div", {"class": "intro"})[-1].findAll("p"))
     # catalog
     raw_catalog = try_except(lambda: related_info.find("span", text=re.compile(
         "目录")).parent.next_sibling.next_sibling.next_sibling.next_sibling)
@@ -106,7 +107,8 @@ def parse_book_page(bs, book):
     img_loc = bs.find(id="mainpic").a["href"]
     if img_loc.find('update_image') < 0:
         img_id = img_loc.split("/")[-1]
-        urlretrieve(img_loc, "../db/img/book/%s" % img_id)
+        if not os.path.exists('../db/img/book/%s' % img_id):
+            urlretrieve(img_loc, "../db/img/book/%s" % img_id)
     else:
         img_id = None
 

@@ -10,7 +10,7 @@ from page_processor.parseBookPage import generate_book
 
 def get_book_collection(session, user_url):
     logger = get_logger()
-    logger.info('Scraping book collection')
+    logger.info('[Start]\t Scraping book collection')
     urls = [user_url + "/collect",
             user_url + "/do",
             user_url + "/wish"]
@@ -42,11 +42,12 @@ def get_book_info(session, collection, user_url):
         url = book.url
         bs = get_bs(session, url, user_url)
         if bs is not None:
+            logger = get_logger()
             try:
                 parse_book_page(bs, book)
+                logger.info('[Get]\t %s' % url)
             except Exception as e:
-                logger = get_logger()
-                logger.warning('url: %s error: %s' % (url, e))
+                logger.warning('[Error]\t url: %s error: %s' % (url, e))
                 traceback.print_exc()
                 sys.exit(0)
     return collection

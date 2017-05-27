@@ -11,7 +11,7 @@ def initialize():
 
 def scrape(user_id):
     logger = get_logger()
-    logger.info('Start Scraping')
+    logger.info('[Start]\t Start Scraping')
     download(user_id)
 
 

@@ -21,12 +21,12 @@ def get_bs(session, url, referer):
     #     'http': 'http://10.10.1.10:3128',
     #     'https': 'http://10.10.1.10:1080',
     # }
-    time.sleep(1)
+    time.sleep(5)
     res = session.get(url, headers=headers)
     if res.status_code == requests.codes.ok:
         bs_obj = BeautifulSoup(res.text, "html.parser")
         return bs_obj
     else:
         logger = get_logger()
-        logger.error('Status ERROR! url: %s status_code: %s' % (url, res.status_code))
+        logger.error('[Error]\t url: %s status_code: %s' % (url, res.status_code))
         return None

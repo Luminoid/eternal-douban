@@ -26,8 +26,8 @@ def get_logger():
 if __name__ == '__main__':
     initialize_logger()
     logger = get_logger()
-    logger.debug('[Test]\t Test logger.py: DEBUG message')
-    logger.info('[Test]\t Test logger.py: INFO message')
-    logger.warning('[Test]\t Test logger.py: WARNING message')
-    logger.error('[Test]\t Test logger.py: ERROR message')
-    logger.critical('[Test]\t Test logger.py: CRITICAL message')
+    logger.debug('[Test]   Test logger.py: DEBUG message')
+    logger.info('[Test]   Test logger.py: INFO message')
+    logger.warning('[Test]   Test logger.py: WARNING message')
+    logger.error('[Test]   Test logger.py: ERROR message')
+    logger.critical('[Test]   Test logger.py: CRITICAL message')

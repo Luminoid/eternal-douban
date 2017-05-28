@@ -28,5 +28,5 @@ def get_bs(session, url, referer):
         return bs_obj
     else:
         logger = get_logger()
-        logger.error('[Error]\t url: %s status_code: %s' % (url, res.status_code))
+        logger.error('[Error]  url: %s status_code: %s' % (url, res.status_code))
         return None

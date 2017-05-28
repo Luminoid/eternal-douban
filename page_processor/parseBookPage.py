@@ -65,7 +65,7 @@ def generate_book(item, status):
     # comment
     try:
         if note.p.get_text() != '\n':
-            book.comment = note.p.get_text()
+            book.comment = note.p.get_text().strip()
         else:
             book.comment = None
     except AttributeError:
@@ -111,6 +111,11 @@ def parse_book_page(bs, book):
             urlretrieve(img_loc, "../db/img/book/%s" % img_id)
     else:
         img_id = None
+    # average_rating
+    rating = try_except(lambda: bs.select("#interest_sectl strong[property=\"v:average\"]")[0].get_text().strip())
+    if rating is not None:
+        if len(rating) == 0:
+            rating = None
 
     # info
     book.isbn13 = get_span_val(info, "ISBN")
@@ -129,5 +134,5 @@ def parse_book_page(bs, book):
     book.catalog = catalog
     book.author_intro = '\n'.join(p.get_text() for p in list(author_intro)) \
         if author_intro is not None else None
-    book.average_rating = try_except(lambda: bs.select("#interest_sectl strong[property=\"v:average\"]")[0].get_text())
+    book.average_rating = rating
     book.ratings_count = try_except(lambda: bs.select("#interest_sectl span[property=\"v:votes\"]")[0].get_text())

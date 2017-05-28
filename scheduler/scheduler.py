@@ -11,10 +11,10 @@ def initialize():
 
 def scrape(user_id):
     logger = get_logger()
-    logger.info('[Start]\t Start Scraping')
+    logger.info('[Start]  Start Scraping')
     download(user_id)
 
 
 if __name__ == '__main__':
     initialize()
-    scrape('143956596')
+    scrape('shezaizuyi')

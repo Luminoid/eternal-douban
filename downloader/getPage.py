@@ -2,7 +2,7 @@ import requests
 import re
 import time
 from bs4 import BeautifulSoup
-from log.logger import get_logger
+from util.logger import get_logger
 
 
 # TODO: proxy
@@ -28,5 +28,5 @@ def get_bs(session, url, referer):
         return bs_obj
     else:
         logger = get_logger()
-        logger.error('[Error]  url: %s status_code: %s' % (url, res.status_code))
+        logger.error('[Error]    url: %s status_code: %s' % (url, res.status_code))
         return None

@@ -52,32 +52,32 @@ def insert_singer():
 
 
 def insert_my_book():
-    return 'INSERT INTO MY_BOOK VALUES (?,?,?,?,?,?)'
+    return 'INSERT OR REPLACE INTO MY_BOOK VALUES (?,?,?,?,?,?)'
 
 
 def insert_my_movie():
-    return 'INSERT INTO MY_MOVIE VALUES (?,?,?,?,?,?)'
+    return 'INSERT OR REPLACE INTO MY_MOVIE VALUES (?,?,?,?,?,?)'
 
 
 def insert_my_tv():
-    return 'INSERT INTO MY_TV VALUES (?,?,?,?,?,?)'
+    return 'INSERT OR REPLACE INTO MY_TV VALUES (?,?,?,?,?,?)'
 
 
 def insert_my_music():
-    return 'INSERT INTO MY_MUSIC VALUES (?,?,?,?,?,?)'
+    return 'INSERT OR REPLACE INTO MY_MUSIC VALUES (?,?,?,?,?,?)'
 
 
 insert_enum = {
-    "book": insert_book,
-    "author": insert_author(),
-    "movie": insert_movie(),
-    "tv": insert_tv(),
-    "celebrity": insert_celebrity(),
-    "music": insert_music(),
-    "singer": insert_singer(),
-    "my_book": insert_my_book,
-    "my_movie": insert_my_movie(),
-    "my_tv": insert_my_tv(),
-    "my_music": insert_my_music()
+    "BOOK": insert_book,
+    "AUTHOR": insert_author,
+    "MOVIE": insert_movie,
+    "TV": insert_tv,
+    "CELEBRITY": insert_celebrity,
+    "MUSIC": insert_music,
+    "SINGER": insert_singer,
+    "MY_BOOK": insert_my_book,
+    "MY_MOVIE": insert_my_movie,
+    "MY_TV": insert_my_tv,
+    "MY_MUSIC": insert_my_music
 }
 

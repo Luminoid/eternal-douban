@@ -17,4 +17,3 @@ def get_collection_list(user_id, data_id, data_type):
     query = 'SELECT %s FROM %s' % (data_id, data_type)
     curs.execute(query)
     return curs.fetchall()  # [(1,), (2,), (3,), (4,)]
-

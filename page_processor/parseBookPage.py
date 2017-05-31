@@ -2,7 +2,6 @@ import bs4
 import re
 import os
 from urllib.request import urlretrieve
-from model.book import Book
 
 
 def try_except(success):
@@ -40,40 +39,42 @@ def get_list_val(tag):
     return list_val
 
 
-def generate_book(item, status):
-    book = Book()
+def generate_my_book(item, status):
     info = item.find("div", {"class": "info"})
     note = info.find("div", {"class": "short-note"})
     # url
-    book.url = info.h2.a["href"]
+    url = info.h2.a["href"]
+    # book_id
+    book_id_lst = url.split('/')
+    book_id = book_id_lst[-2] if len(book_id_lst[-1]) == 0 else book_id_lst[-1]
     # status
-    book.status = status
+    status = status
     # updated
-    book.updated = note.div.find("span", {"class": "date"}).get_text().split()[0]
+    updated = note.div.find("span", {"class": "date"}).get_text().split()[0]
     # rating
     try:
         rating_str = note.div.find("span", {"class": re.compile("^rating")})["class"][0]
-        book.rating = re.match(r'\D+(\d+).+', rating_str).group(1)
+        rating = re.match(r'\D+(\d+).+', rating_str).group(1)
     except TypeError:      # 'NoneType' object is not subscriptable
-        book.rating = None
+        rating = None
     # tags
     try:
         tag_list = note.div.find("span", {"class": "tags"}).get_text().split()[1:]
-        book.tags = ' '.join(tag_list)
+        tags = ' '.join(tag_list)
     except AttributeError:
-        book.tags = None
+        tags = None
     # comment
     try:
         if note.p.get_text() != '\n':
-            book.comment = note.p.get_text().strip()
+            comment = note.p.get_text().strip()
         else:
-            book.comment = None
+            comment = None
     except AttributeError:
-        book.comment = None
-    return book
+        comment = None
+    return book_id, status, updated, rating, tags, comment
 
 
-def parse_book_page(bs, book):
+def parse_book_page(bs, url):
     info = bs.find(id="info")
     related_info = bs.select("#content .related_info")[0]
     # author
@@ -118,21 +119,25 @@ def parse_book_page(bs, book):
             rating = None
 
     # info
-    book.isbn13 = get_span_val(info, "ISBN")
-    book.title = bs.find(id="wrapper").h1.span.get_text()
-    book.origin_title = get_span_val(info, "原作名")
-    book.subtitle = get_span_val(info, "副标题")
-    book.author = get_list_val(author) if author is not None else None
-    book.translator = get_list_val(translator) if translator is not None else None
-    book.publisher = get_span_val(info, "出版社")
-    book.pubdate = get_span_val(info, "出版年")
-    book.pages = get_span_val(info, "页数")
-    book.price = get_span_val(info, "定价")
-    book.binding = get_span_val(info, "装帧")
-    book.image = "img/book/%s" % img_id if img_id is not None else None
-    book.summary = '\n'.join(p.get_text() for p in list(summary)) if summary is not None else None
-    book.catalog = catalog
-    book.author_intro = '\n'.join(p.get_text() for p in list(author_intro)) \
+    book_id = url.split('/')[-2]
+    isbn13 = get_span_val(info, "ISBN")
+    title = bs.find(id="wrapper").h1.span.get_text()
+    origin_title = get_span_val(info, "原作名")
+    subtitle = get_span_val(info, "副标题")
+    author = get_list_val(author) if author is not None else None
+    translator = get_list_val(translator) if translator is not None else None
+    publisher = get_span_val(info, "出版社")
+    pubdate = get_span_val(info, "出版年")
+    pages = get_span_val(info, "页数")
+    price = get_span_val(info, "定价")
+    binding = get_span_val(info, "装帧")
+    image = "img/book/%s" % img_id if img_id is not None else None
+    summary = '\n'.join(p.get_text() for p in list(summary)) if summary is not None else None
+    catalog = catalog
+    author_intro = '\n'.join(p.get_text() for p in list(author_intro)) \
         if author_intro is not None else None
-    book.average_rating = rating
-    book.ratings_count = try_except(lambda: bs.select("#interest_sectl span[property=\"v:votes\"]")[0].get_text())
+    average_rating = rating
+    ratings_count = try_except(lambda: bs.select("#interest_sectl span[property=\"v:votes\"]")[0].get_text())
+
+    return book_id, isbn13, title, origin_title, subtitle, url, author, translator, publisher, pubdate, pages, \
+        price, binding, image, summary, catalog, author_intro, average_rating, ratings_count

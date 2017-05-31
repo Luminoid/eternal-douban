@@ -1,16 +1,22 @@
-import re
 import math
+import re
 import sys
 import traceback
-from log.logger import get_logger
+from db_handler.insertData import insert_collection
+from db_handler.insertData import insert_entry
+from db_handler.queryData import get_collection_list
+from util.util import get_base_url
 from downloader.getPage import get_bs
+from page_processor.parseBookPage import generate_my_book
 from page_processor.parseBookPage import parse_book_page
-from page_processor.parseBookPage import generate_book
+from util.logger import get_logger
+from util.settings import *
 
 
-def get_book_collection(tracer, user_url):
+def get_book_collection(tracer):
+    user_url = get_base_url('book', tracer.user_id)
     logger = get_logger()
-    logger.info('[Start]  Scraping book collection')
+    logger.info('[Start]    Scraping book collection')
     urls = [user_url + "/collect",
             user_url + "/do",
             user_url + "/wish"]
@@ -31,32 +37,43 @@ def get_book_collection(tracer, user_url):
                 if bs is not None:
                     items = bs.find(id="content").find("ul", {"class": "interest-list"}).findAll("li")
                     for item in items:
-                        book = generate_book(item, status)
-                        tracer.collection.append(book)
+                        my_book = generate_my_book(item, status)
+                        insert_collection(tracer.user_id, my_book, DATA_MY_BOOK)
+                        tracer.book_collection.add(my_book[0])
     get_book_page(tracer, user_url)
 
 
 def get_book_page(tracer, user_url):
+    user_book_set = tracer.book_collection
+    db_book_lst = get_collection_list(tracer.user_id, 'book_id', DATA_MY_BOOK)
+    db_book_set = {item[0] for item in db_book_lst}
+    scrape_set = user_book_set - db_book_set
     logger = get_logger()
     # scraping
-    for book in tracer.book_collection:
-        get_book_info(tracer, book, user_url)
+    failed_page = set()
+    for book_id in scrape_set:
+        if not get_book_info(tracer, book_id, user_url):
+            failed_page.add(book_id)
     # rescraping
-    for book in tracer.book_collection:
-        if book.isbn13 is None and book.title is None:
-            logger.warning('[Get]    Rescrape %s' % book.url)
-            get_book_info(tracer, book, user_url)
+    if len(failed_page) != 0:
+        logger.warning('[Rescrape] Rescraping book collection')
+        for book_id in failed_page:
+            get_book_info(tracer, book_id, user_url)
 
 
-def get_book_info(tracer, book, user_url):
+def get_book_info(tracer, book_id, user_url):
     logger = get_logger()
-    url = book.url
+    url = 'https://book.douban.com/subject/%s/' % book_id
     bs = get_bs(tracer.session, url, user_url)
     if bs is not None:
         try:
-            parse_book_page(bs, book)
-            logger.info('[Get]    %s' % url)
+            book = parse_book_page(bs, url)
+            insert_entry(book, DATA_BOOK)
+            logger.info('[Get]      url: %s' % url)
+            return True
         except Exception as e:
-            logger.warning('[Error]  url: %s error: %s' % (url, e))
+            logger.warning('[Error]    url: %s error: %s' % (url, e))
             traceback.print_exc()
             sys.exit(0)
+    else:
+        return False

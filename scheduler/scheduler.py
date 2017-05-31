@@ -19,4 +19,4 @@ def scrape(user_id):
 
 if __name__ == '__main__':
     initialize()
-    scrape('57698081')
+    scrape('139459498')

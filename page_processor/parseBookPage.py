@@ -47,6 +47,7 @@ def generate_my_book(item, status):
     # book_id
     book_id_lst = url.split('/')
     book_id = book_id_lst[-2] if len(book_id_lst[-1]) == 0 else book_id_lst[-1]
+    book_id = int(book_id)
     # status
     status = status
     # updated

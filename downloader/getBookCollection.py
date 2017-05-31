@@ -17,9 +17,9 @@ def get_book_collection(tracer):
     user_url = get_base_url('book', tracer.user_id)
     logger = get_logger()
     logger.info('[Start]    Scraping book collection')
-    urls = [user_url + "/collect",
-            user_url + "/do",
-            user_url + "/wish"]
+    urls = [user_url + "collect",
+            user_url + "do",
+            user_url + "wish"]
 
     for url in urls:
         status = url.split("/")[-1]
@@ -45,7 +45,7 @@ def get_book_collection(tracer):
 
 def get_book_page(tracer, user_url):
     user_book_set = tracer.book_collection
-    db_book_lst = get_collection_list(tracer.user_id, 'book_id', DATA_MY_BOOK)
+    db_book_lst = get_collection_list(DATA_BOOK)
     db_book_set = {item[0] for item in db_book_lst}
     scrape_set = user_book_set - db_book_set
     logger = get_logger()

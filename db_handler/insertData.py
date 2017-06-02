@@ -63,12 +63,10 @@ insert_enum = {
     "BOOK": insert_book,
     "AUTHOR": insert_author,
     "MOVIE": insert_movie,
-    "TV": insert_tv,
     "CELEBRITY": insert_celebrity,
     "MUSIC": insert_music,
     "SINGER": insert_singer,
     "MY_BOOK": insert_my_book,
     "MY_MOVIE": insert_my_movie,
-    "MY_TV": insert_my_tv,
     "MY_MUSIC": insert_my_music
 }

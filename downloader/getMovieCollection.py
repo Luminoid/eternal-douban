@@ -3,8 +3,8 @@ import re
 import sys
 import traceback
 from downloader.getPage import get_bs
-from page_processor.parseBookPage import parse_my_book
-from page_processor.parseBookPage import parse_book_page
+from page_processor.parseMoviePage import parse_my_movie
+from page_processor.parseMoviePage import parse_movie_page
 from db_handler.insertData import insert_collection
 from db_handler.insertData import insert_entry
 from db_handler.queryData import get_collection_list
@@ -13,10 +13,10 @@ from util.logger import get_logger
 from util.settings import *
 
 
-def get_book_collection(tracer):
-    user_url = get_user_url('book', tracer.user_id)
+def get_movie_collection(tracer):
+    user_url = get_user_url('movie', tracer.user_id)
     logger = get_logger()
-    logger.info('[Start]    Scraping book collection')
+    logger.info('[Start]    Scraping movie collection')
     urls = [user_url + "collect",
             user_url + "do",
             user_url + "wish"]
@@ -35,40 +35,38 @@ def get_book_collection(tracer):
                     url_referer = url + "?start=%s&sort=time&rating=all&filter=all&mode=grid" % str((i - 1) * 15)
                 bs = get_bs(tracer.session, url_para, url_referer)
                 if bs is not None:
-                    items = bs.find(id="content").find("ul", {"class": "interest-list"}).findAll("li")
+                    items = bs.find(id="content").find("div", {"class": "grid-view"}).findAll("div", {"class": "item"})
                     for item in items:
-                        my_book = parse_my_book(item, status)
-                        insert_collection(tracer.user_id, my_book, DATA_MY_BOOK)
-                        tracer.book_collection.add(my_book[0])
-    get_book_page(tracer, user_url)
+                        my_movie = parse_my_movie(item, status)
+                        insert_collection(tracer.user_id, my_movie[1:], DATA_MY_MOVIE)
+                        tracer.movie_collection.add((my_movie[1], my_movie[0]))
+    get_movie_page(tracer, user_url)
 
 
-def get_book_page(tracer, user_url):
-    user_book_set = tracer.book_collection
-    db_book_lst = get_collection_list(DATA_BOOK)
-    db_book_set = {item[0] for item in db_book_lst}
-    scrape_set = user_book_set - db_book_set
+def get_movie_page(tracer, user_url):
+    db_movie_set = {item[0] for item in get_collection_list(DATA_MOVIE)}
+    scrape_set = {(movie_id, title) for movie_id, title in tracer.movie_collection if movie_id not in db_movie_set}
     logger = get_logger()
     # scraping
     failed_page = set()
-    for book_id in scrape_set:
-        if not get_book_info(tracer, book_id, user_url):
-            failed_page.add(book_id)
+    for movie_id, title in scrape_set:
+        if not get_movie_info(tracer, movie_id, user_url, title):
+            failed_page.add((movie_id, title))
     # rescraping
     if len(failed_page) != 0:
-        logger.warning('[Rescrape] Rescraping book collection')
-        for book_id in failed_page:
-            get_book_info(tracer, book_id, user_url)
+        logger.warning('[Rescrape] Rescraping movie collection')
+        for movie_id, title in failed_page:
+            get_movie_info(tracer, movie_id, user_url, title)
 
 
-def get_book_info(tracer, book_id, user_url):
+def get_movie_info(tracer, movie_id, user_url, title):
     logger = get_logger()
-    url = 'https://book.douban.com/subject/%s/' % book_id
+    url = 'https://movie.douban.com/subject/%s/' % movie_id
     bs = get_bs(tracer.session, url, user_url)
     if bs is not None:
         try:
-            book = parse_book_page(bs, url)
-            insert_entry(book, DATA_BOOK)
+            movie = parse_movie_page(bs, url, title)
+            insert_entry(movie, DATA_MOVIE)
             logger.info('[Get]      url: %s' % url)
             return True
         except Exception as e:

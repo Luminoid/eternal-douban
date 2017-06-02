@@ -39,7 +39,7 @@ def get_list_val(tag):
     return list_val
 
 
-def generate_my_book(item, status):
+def parse_my_book(item, status):
     info = item.find("div", {"class": "info"})
     note = info.find("div", {"class": "short-note"})
     # url

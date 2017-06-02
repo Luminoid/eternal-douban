@@ -1,8 +1,8 @@
 from util.logger import initialize_logger
 from util.logger import get_logger
-from downloader.downloader import download
 from db_handler.initializer import initialize_collection
 from db_handler.initializer import initialize_user
+from downloader.downloader import download
 
 
 def initialize():
@@ -19,4 +19,4 @@ def scrape(user_id):
 
 if __name__ == '__main__':
     initialize()
-    scrape('139459498')
+    scrape('162041699')

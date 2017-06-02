@@ -66,35 +66,10 @@ def initialize_collection():
                 durations      TEXT,           -- array
                 countries      TEXT,           -- array
                 languages      TEXT,           -- array
-                /* Detail info */
-                image          TEXT,           -- path
-                summary        TEXT,
-                photos         TEXT,           -- array
-                /* Rating info */
-                average_rating INT,
-                ratings_count  INT
-            );
-            ''')
-        curs.execute('''
-            CREATE TABLE TV (
-                id             INT    PRIMARY KEY,
                 /* TV info */
-                imdb           TEXT,
-                title          TEXT,
-                origin_title   TEXT,
-                aka            TEXT,           -- array
-                url            TEXT,           -- douban link
-                directors      TEXT,           -- array
-                writers        TEXT,           -- array
-                casts          TEXT,           -- array
-                pubdate        TEXT,           -- date
-                genres         TEXT,           -- array
                 seasons_count  INT,
                 current_season INT,
                 episodes_count INT,
-                durations      TEXT,           -- array
-                countries      TEXT,           -- array
-                languages      TEXT,           -- array
                 /* Detail info */
                 image          TEXT,           -- path
                 summary        TEXT,

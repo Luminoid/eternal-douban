@@ -19,7 +19,7 @@ def initialize_collection():
                 translator     TEXT,           -- array
                 publisher      TEXT,
                 pubdate        TEXT,           -- date
-                pages          INT,
+                pages          TEXT,
                 price          TEXT,
                 binding        TEXT,
                 /* Detail info */
@@ -28,7 +28,7 @@ def initialize_collection():
                 catalog        TEXT,
                 author_intro   TEXT,
                 /* Rating info */
-                average_rating INT,
+                average_rating REAL,
                 ratings_count  INT
             )
             ''')
@@ -53,7 +53,7 @@ def initialize_collection():
             CREATE TABLE MOVIE (
                 id             INT    PRIMARY KEY,
                 /* Movie info */
-                imdb           INT,
+                imdb           TEXT,
                 title          TEXT,
                 origin_title   TEXT,
                 aka            TEXT,           -- array
@@ -75,7 +75,7 @@ def initialize_collection():
                 summary        TEXT,
                 photos         TEXT,           -- array
                 /* Rating info */
-                average_rating INT,
+                average_rating REAL,
                 ratings_count  INT
             );
             ''')
@@ -117,7 +117,7 @@ def initialize_collection():
                 summary        TEXT,
                 tracks         TEXT,           -- array
                 /* Rating info */
-                average_rating INT,
+                average_rating REAL,
                 ratings_count  INT
             );
             ''')
@@ -163,17 +163,6 @@ def initialize_user(user_id):
         curs.execute('''
             CREATE TABLE MY_MOVIE (
                 movie_id       INT    PRIMARY KEY,
-                /* User info */
-                status         TEXT,           -- collect, do, wish
-                updated        TEXT,           -- date
-                rating         INT,            -- 1 ~ 5
-                tags           TEXT,           -- tag list
-                comment        TEXT            -- comment text
-            );
-            ''')
-        curs.execute('''
-            CREATE TABLE MY_TV (
-                tv_id             INT    PRIMARY KEY,
                 /* User info */
                 status         TEXT,           -- collect, do, wish
                 updated        TEXT,           -- date

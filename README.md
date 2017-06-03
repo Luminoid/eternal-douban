@@ -27,6 +27,6 @@
 - 国外电影的标题包含中文标题和原标题
 - 条目的展开全部以 `<span style="display: none;">` 的方式实现
 - value1 / value2 / ... 形式的列表有三种实现方式
-    1. 导演信息：封装在 `<span class="attrs">` 中
-    2. 类型信息：以同级的一或多个 `<span property="v:genre">` 展示
-    3. 语言信息：已经直接按照 ` / ` 划分好的字符串
+    1. 如导演信息：封装在 `<span class="attrs">` 中
+    2. 如类型信息：以同级的一或多个 `<span property="v:genre">` 展示
+    3. 如语言信息：已经直接按照 ` / ` 划分好的字符串

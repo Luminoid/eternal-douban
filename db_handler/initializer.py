@@ -52,6 +52,7 @@ def initialize_collection():
         curs.execute('''
             CREATE TABLE MOVIE (
                 id             INT    PRIMARY KEY,
+                subtype        TEXT,           -- movie or tv
                 /* Movie info */
                 imdb           TEXT,
                 title          TEXT,

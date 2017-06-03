@@ -35,6 +35,7 @@ def get_movie_collection(tracer):
                     url_referer = url + "?start=%s&sort=time&rating=all&filter=all&mode=grid" % str((i - 1) * 15)
                 bs = get_bs(tracer.session, url_para, url_referer)
                 if bs is not None:
+                    logger.info('[Parse]    url: %s' % url)
                     items = bs.find(id="content").find("div", {"class": "grid-view"}).findAll("div", {"class": "item"})
                     for item in items:
                         my_movie = parse_my_movie(item, status)
@@ -66,6 +67,7 @@ def get_movie_info(tracer, movie_id, user_url, title):
     if bs is not None:
         try:
             movie = parse_movie_page(bs, url, title)
+            print(movie)
             insert_entry(movie, DATA_MOVIE)
             logger.info('[Get]      url: %s' % url)
             return True

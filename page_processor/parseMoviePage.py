@@ -16,6 +16,7 @@ def try_except(success):
 
 
 def get_span_val(tag, name):
+    """Get the next sibling string's value"""
     try:
         ret = tag.find("span", text=re.compile(name)).next_sibling.strip()
     except AttributeError:
@@ -23,21 +24,55 @@ def get_span_val(tag, name):
     return ret
 
 
-def get_list_val(tag):
-    list_val = ''
+def get_next_span_val(tag, name):
+    """Get the next sibling span's content"""
+    try:
+        ret = tag.find("span", text=re.compile(name)).next_sibling.next_sibling
+        if ret.name == 'span':
+            return ret.get_text().strip()
+        else:
+            return None
+    except AttributeError:
+        return None
+
+
+def get_list_val(tag, name):
+    """Get list value from the next sibling span's content"""
+    try:
+        return tag.find("span", text=re.compile(name)).find_next_sibling("span", {'class': 'attrs'}).get_text()
+    except AttributeError:
+        return None
+
+
+def get_sibling_list_val(tag, attr):
+    """Get list value from the next sibling spans' content"""
+    try:
+        lst = tag.findAll("span", {'property': attr})
+        if len(lst) > 0:
+            return ' / '.join([item.get_text().strip() for item in lst])
+        else:
+            return None
+    except AttributeError:
+        return None
+
+
+def get_span_and_str(tag, name):
+    try:
+        tag = tag.find("span", text=re.compile(name))
+    except AttributeError:
+        return None
+    val = ''
     ptr = tag.next_sibling
     while ptr is not None and not (hasattr(ptr, 'name') and ptr.name == 'br'):
         if type(ptr) is bs4.element.NavigableString:
-            list_val += ptr.strip()
-        elif hasattr(ptr, 'name') and ptr.name == 'a':
-            list_val += ptr.get_text().strip()
+            val += ptr.strip()
+        elif hasattr(ptr, 'name') and ptr.name == 'span':
+            val += ptr.get_text().strip()
         ptr = ptr.next_sibling
-
-    list_val = re.sub(' *\n *', ' ', list_val)
-    list_val = re.sub('/', ' / ', list_val)
-    if list_val[0] == ':':
-        list_val = list_val[1:]
-    return list_val
+    if len(val) > 0:
+        return val
+    else:
+        return None
 
 
 def parse_my_movie(item, status):
@@ -79,91 +114,64 @@ def parse_my_movie(item, status):
 
 def parse_movie_page(bs, url, title):
     info = bs.find(id="info")
-    related_info = bs.select("#content .related-info")[0]
+    # subtype
+    type_str = try_except(lambda: bs.find(id='subject-others-interests').h2.get_text())
     # title
     titles = title.split(' / ')
     former_title = titles[0]
     latter_title = titles[1] if len(titles) > 1 else None
+    # duration
+    movie_duration = get_span_and_str(info, '片长')
+    episode_duration = get_span_val(info, '单集片长')
+    # seasons
+    seasons = try_except(lambda: bs.find(id="season"))
 
-    # # author
-    # author = try_except(lambda: info.find("span", text=re.compile("作者")))
-    # # translator
-    # translator = try_except(lambda: info.find("span", text=re.compile("译者")))
-    # # summary
-    # summary = try_except(lambda: related_info.find("span", text=re.compile("内容简介"))
-    #                      .parent.next_sibling.next_sibling.findAll("div", {"class": "intro"})[-1].findAll("p"))
-    # # author intro
-    # author_intro = try_except(lambda: related_info.find("span", text=re.compile("作者简介"))
-    #                           .parent.next_sibling.next_sibling.findAll("div", {"class": "intro"})[-1].findAll("p"))
-    # # catalog
-    # raw_catalog = try_except(lambda: related_info.find("span", text=re.compile(
-    #     "目录")).parent.next_sibling.next_sibling.next_sibling.next_sibling)
-    # if raw_catalog is not None:
-    #     catalog = [elem.strip() if type(elem) is bs4.element.NavigableString else elem.get_text() for elem in
-    #                raw_catalog.contents]
-    #     catalog = '\n'.join(catalog)
-    #     catalog = re.sub(r' *\n+ *', '\n', catalog)
-    #     catalog = catalog.split('\n')
-    #     catalog = '\n'.join(catalog)
-    #     btn_index = catalog.find('· · · · · ·')
-    #     if btn_index > 0:
-    #         catalog = catalog[:btn_index]
-    #     if catalog[-1] == '\n':
-    #         catalog = catalog[:-1]
-    # else:
-    #     catalog = None
-    # # image
-    # img_loc = bs.find(id="mainpic").a["href"]
-    # if img_loc.find('update_image') < 0:
-    #     img_id = img_loc.split("/")[-1]
-    #     if not os.path.exists('../db/img/movie/%s' % img_id):
-    #         urlretrieve(img_loc, "../db/img/movie/%s" % img_id)
-    # else:
-    #     img_id = None
-    # # average_rating
-    # rating = try_except(lambda: bs.select("#interest_sectl strong[property=\"v:average\"]")[0].get_text().strip())
-    # if rating is not None:
-    #     if len(rating) == 0:
-    #         rating = None
-    #
+    # image
+    img_loc = bs.find(id="mainpic").a.img['src']
+    img_loc = img_loc.replace('webp', 'jpg')
+    if img_loc.find('movie_default_large') < 0:
+        img_id = img_loc.split('/')[-1]
+        if not os.path.exists('../db/img/movie/%s' % img_id):
+            urlretrieve(img_loc, "../db/img/movie/%s" % img_id)
+    else:
+        img_id = None
+
+    # summary
+    summary = try_except(lambda: bs.find(id='link-report').find('span', {'class': 'all'}).get_text().strip())
+    if summary is None:
+        summary = try_except(
+            lambda: bs.find(id='link-report').find('span', {'property': 'v:summary'}).get_text().strip())
+
+    # average_rating
+    rating = try_except(lambda: bs.find(id='interest_sectl').find('strong', {'property': 'v:average'}).get_text())
+    if rating is not None:
+        if len(rating) == 0:
+            rating = None
+
     # info
     movie_id = url.split('/')[-2]
+    subtype = 'tv' if type_str is not None and '电视剧' in type_str else 'movie'
     imdb = try_except(lambda: info.find("span", text=re.compile('IMDb')).find_next_sibling("a").get_text().strip())
     title = former_title
     origin_title = latter_title
-    aka = info.find("span", text=re.compile('又名')).next_sibling.strip()
-    print(movie_id)
-    print(imdb)
-    print(title)
-    print(origin_title)
-    print(aka)
-    sys.exit(0)
-    # url = url
-    # directors =
-    # writers
-    # casts
-    # pubdate
-    # genres
-    # durations
-    # countries
-    # languages
+    aka = try_except(lambda: info.find("span", text=re.compile('又名')).next_sibling.strip())
+    directors = get_list_val(info, '导演')
+    writers = get_list_val(info, '编剧')
+    casts = get_list_val(info, '主演')
+    pubdate = get_sibling_list_val(info, 'v:initialReleaseDate')
+    genres = get_sibling_list_val(info, 'v:genre')
+    durations = movie_duration if movie_duration is not None else episode_duration
+    countries = get_span_val(info, '制片国家')
+    languages = get_span_val(info, '语言')
+    seasons_count = seasons.findAll('option')[-1].get_text() if seasons is not None else None
+    current_season = seasons.find('option', {'selected': 'selected'}).get_text() if seasons is not None else None
+    episodes_count = get_span_val(info, '集数')
+    image = 'img/movie/%s' % img_id if img_id is not None else None
+    summary = re.sub(r' *\n+ *', '\n', summary) if summary is not None else None
+    photos = None
+    average_rating = rating
+    ratings_count = try_except(lambda: bs.find(id='interest_sectl').find('span', {'property': 'v:votes'}).get_text())
 
-    # origin_title = get_span_val(info, "原作名")
-    # subtitle = get_span_val(info, "副标题")
-    # author = get_list_val(author) if author is not None else None
-    # translator = get_list_val(translator) if translator is not None else None
-    # publisher = get_span_val(info, "出版社")
-    # pubdate = get_span_val(info, "出版年")
-    # pages = get_span_val(info, "页数")
-    # price = get_span_val(info, "定价")
-    # binding = get_span_val(info, "装帧")
-    # image = "img/movie/%s" % img_id if img_id is not None else None
-    # summary = '\n'.join(p.get_text() for p in list(summary)) if summary is not None else None
-    # catalog = catalog
-    # author_intro = '\n'.join(p.get_text() for p in list(author_intro)) \
-    #     if author_intro is not None else None
-    # average_rating = rating
-    # ratings_count = try_except(lambda: bs.select("#interest_sectl span[property=\"v:votes\"]")[0].get_text())
-
-    # return movie_id, isbn13, title, origin_title, subtitle, url, author, translator, publisher, pubdate, pages, \
-    #     price, binding, image, summary, catalog, author_intro, average_rating, ratings_count
+    return movie_id, subtype, imdb, title, origin_title, aka, url, directors, writers, casts, pubdate, genres, durations,\
+        countries, languages, seasons_count, current_season, episodes_count, image, summary, photos, average_rating, \
+        ratings_count

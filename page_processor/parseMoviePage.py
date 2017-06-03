@@ -1,7 +1,6 @@
 import bs4
 import re
 import os
-import sys
 from urllib.request import urlretrieve
 
 
@@ -172,6 +171,6 @@ def parse_movie_page(bs, url, title):
     average_rating = rating
     ratings_count = try_except(lambda: bs.find(id='interest_sectl').find('span', {'property': 'v:votes'}).get_text())
 
-    return movie_id, subtype, imdb, title, origin_title, aka, url, directors, writers, casts, pubdate, genres, durations,\
-        countries, languages, seasons_count, current_season, episodes_count, image, summary, photos, average_rating, \
-        ratings_count
+    return movie_id, subtype, imdb, title, origin_title, aka, url, directors, writers, casts, pubdate,\
+        genres, durations, countries, languages, seasons_count, current_season, episodes_count, image,\
+        summary, photos, average_rating, ratings_count

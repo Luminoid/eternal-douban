@@ -95,7 +95,7 @@ def parse_book_page(bs, url):
         catalog = [elem.strip() if type(elem) is bs4.element.NavigableString else elem.get_text() for elem in
                    raw_catalog.contents]
         catalog = '\n'.join(catalog)
-        catalog = re.sub(r' *\n+ *', '\n', catalog)
+        catalog = re.sub(r'\s*?\n+\s*', '\n', catalog)
         catalog = catalog.split('\n')
         catalog = '\n'.join(catalog)
         btn_index = catalog.find('· · · · · ·')

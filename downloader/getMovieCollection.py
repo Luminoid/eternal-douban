@@ -67,7 +67,6 @@ def get_movie_info(tracer, movie_id, user_url, title):
     if bs is not None:
         try:
             movie = parse_movie_page(bs, url, title)
-            print(movie)
             insert_entry(movie, DATA_MOVIE)
             logger.info('[Get]      url: %s' % url)
             return True

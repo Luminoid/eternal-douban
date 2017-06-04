@@ -55,6 +55,17 @@ def get_sibling_list_val(tag, attr):
         return None
 
 
+def get_link_list_val(tag, attr):
+    """Get list value from the parent spans' link content"""
+    lst = try_except(lambda: tag.find(text=re.compile(attr)).parent.findAll('a'))
+    if lst is not None:
+        if len(lst) > 0:
+            lst = ' / '.join([item.get_text() for item in lst])
+        else:
+            lst = None
+    return lst
+
+
 def get_span_and_str(tag, name):
     try:
         tag = tag.find("span", text=re.compile(name))
@@ -74,17 +85,15 @@ def get_span_and_str(tag, name):
         return None
 
 
-def parse_my_movie(item, status):
+def parse_my_music(item, status):
     info = item.find("div", {"class": "info"})
     note = info.ul.findAll('li')[2]
     # url
     url = info.find("li", {"class": "title"}).a["href"]
-    # title
-    title = info.find("li", {"class": "title"}).a.em.get_text()
-    # movie_id
-    movie_id_lst = url.split('/')
-    movie_id = movie_id_lst[-2] if len(movie_id_lst[-1]) == 0 else movie_id_lst[-1]
-    movie_id = int(movie_id)
+    # music_id
+    music_id_lst = url.split('/')
+    music_id = music_id_lst[-2] if len(music_id_lst[-1]) == 0 else music_id_lst[-1]
+    music_id = int(music_id)
     # status
     status = status
     # updated
@@ -103,35 +112,24 @@ def parse_my_movie(item, status):
         tags = None
     # comment
     try:
-        comment = info.find('span', {'class': 'comment'}).get_text().strip()
+        comment = info.ul.findAll('li')[3].get_text().strip()
         if comment == '\n':
             comment = None
-    except AttributeError:
+    except IndexError:
         comment = None
-    return title, movie_id, status, updated, rating, tags, comment
+    return music_id, status, updated, rating, tags, comment
 
 
-def parse_movie_page(bs, url, title):
+def parse_music_page(bs, url):
+    content = bs.find(id='content')
     info = bs.find(id="info")
-    # subtype
-    type_str = try_except(lambda: bs.find(id='subject-others-interests').h2.get_text())
-    # title
-    titles = title.split(' / ')
-    former_title = titles[0]
-    latter_title = titles[1] if len(titles) > 1 else None
-    # duration
-    movie_duration = get_span_and_str(info, '片长')
-    episode_duration = get_span_val(info, '单集片长')
-    # seasons
-    seasons = try_except(lambda: bs.find(id="season"))
 
     # image
-    img_loc = bs.find(id="mainpic").a.img['src']
-    img_loc = img_loc.replace('webp', 'jpg')
-    if img_loc.find('movie_default_large') < 0:
-        img_id = img_loc.split('/')[-1]
-        if not os.path.exists('../db/img/movie/%s' % img_id):
-            urlretrieve(img_loc, "../db/img/movie/%s" % img_id)
+    img_loc = bs.find(id="mainpic").a["href"]
+    if img_loc.find('music-default') < 0:
+        img_id = img_loc.split("/")[-1]
+        if not os.path.exists('../db/img/music/%s' % img_id):
+            urlretrieve(img_loc, "../db/img/music/%s" % img_id)
     else:
         img_id = None
 
@@ -141,6 +139,9 @@ def parse_movie_page(bs, url, title):
         summary = try_except(
             lambda: bs.find(id='link-report').find('span', {'property': 'v:summary'}).get_text().strip())
 
+    # tracks
+    track_list = try_except(lambda: content.find('div', {'class': 'track-list'}).get_text('\n').strip())
+
     # average_rating
     rating = try_except(lambda: bs.find(id='interest_sectl').find('strong', {'property': 'v:average'}).get_text())
     if rating is not None:
@@ -148,29 +149,21 @@ def parse_movie_page(bs, url, title):
             rating = None
 
     # info
-    movie_id = url.split('/')[-2]
-    subtype = 'tv' if type_str is not None and '电视剧' in type_str else 'movie'
-    imdb = try_except(lambda: info.find("span", text=re.compile('IMDb')).find_next_sibling("a").get_text().strip())
-    title = former_title
-    origin_title = latter_title
-    aka = try_except(lambda: info.find("span", text=re.compile('又名')).next_sibling.strip())
-    directors = get_list_val(info, '导演')
-    writers = get_list_val(info, '编剧')
-    casts = get_list_val(info, '主演')
-    pubdate = get_sibling_list_val(info, 'v:initialReleaseDate')
-    genres = get_sibling_list_val(info, 'v:genre')
-    durations = movie_duration if movie_duration is not None else episode_duration
-    countries = get_span_val(info, '制片国家')
-    languages = get_span_val(info, '语言')
-    seasons_count = seasons.findAll('option')[-1].get_text() if seasons is not None else None
-    current_season = seasons.find('option', {'selected': 'selected'}).get_text() if seasons is not None else None
-    episodes_count = get_span_val(info, '集数')
-    image = 'img/movie/%s' % img_id if img_id is not None else None
+    music_id = url.split('/')[-2]
+    title = bs.find(id="wrapper").h1.span.get_text().strip()
+    aka = get_span_val(info, '又名')
+    singer = get_link_list_val(info, '表演者')
+    publisher = get_link_list_val(info, '出版者')
+    pubdate = get_span_val(info, '发行时间')
+    genres = get_span_val(info, '流派')
+    durations = None  # not provided
+    media = get_span_val(info, '介质')
+    version = get_span_val(info, '专辑类型')
+    image = "img/music/%s" % img_id if img_id is not None else None
     summary = re.sub(r'\s*?\n+\s*', '\n', summary) if summary is not None else None
-    photos = None
+    tracks = re.sub(r'\s*?\n+\s*', '\n', track_list) if track_list is not None else None
     average_rating = rating
     ratings_count = try_except(lambda: bs.find(id='interest_sectl').find('span', {'property': 'v:votes'}).get_text())
 
-    return movie_id, subtype, imdb, title, origin_title, aka, url, directors, writers, casts, pubdate,\
-        genres, durations, countries, languages, seasons_count, current_season, episodes_count, image,\
-        summary, photos, average_rating, ratings_count
+    return music_id, title, aka, url, singer, publisher, pubdate, genres, durations, media, version, image,\
+        summary, tracks, average_rating, ratings_count

@@ -1,4 +1,3 @@
-import bs4
 import re
 import os
 from urllib.request import urlretrieve
@@ -23,38 +22,6 @@ def get_span_val(tag, name):
     return ret
 
 
-def get_next_span_val(tag, name):
-    """Get the next sibling span's content"""
-    try:
-        ret = tag.find("span", text=re.compile(name)).next_sibling.next_sibling
-        if ret.name == 'span':
-            return ret.get_text().strip()
-        else:
-            return None
-    except AttributeError:
-        return None
-
-
-def get_list_val(tag, name):
-    """Get list value from the next sibling span's content"""
-    try:
-        return tag.find("span", text=re.compile(name)).find_next_sibling("span", {'class': 'attrs'}).get_text()
-    except AttributeError:
-        return None
-
-
-def get_sibling_list_val(tag, attr):
-    """Get list value from the next sibling spans' content"""
-    try:
-        lst = tag.findAll("span", {'property': attr})
-        if len(lst) > 0:
-            return ' / '.join([item.get_text().strip() for item in lst])
-        else:
-            return None
-    except AttributeError:
-        return None
-
-
 def get_link_list_val(tag, attr):
     """Get list value from the parent spans' link content"""
     lst = try_except(lambda: tag.find(text=re.compile(attr)).parent.findAll('a'))
@@ -64,25 +31,6 @@ def get_link_list_val(tag, attr):
         else:
             lst = None
     return lst
-
-
-def get_span_and_str(tag, name):
-    try:
-        tag = tag.find("span", text=re.compile(name))
-    except AttributeError:
-        return None
-    val = ''
-    ptr = tag.next_sibling
-    while ptr is not None and not (hasattr(ptr, 'name') and ptr.name == 'br'):
-        if type(ptr) is bs4.element.NavigableString:
-            val += ptr.strip()
-        elif hasattr(ptr, 'name') and ptr.name == 'span':
-            val += ptr.get_text().strip()
-        ptr = ptr.next_sibling
-    if len(val) > 0:
-        return val
-    else:
-        return None
 
 
 def parse_my_music(item, status):
@@ -134,10 +82,10 @@ def parse_music_page(bs, url):
         img_id = None
 
     # summary
-    summary = try_except(lambda: bs.find(id='link-report').find('span', {'class': 'all'}).get_text().strip())
+    summary = try_except(lambda: bs.find(id='link-report').find('span', {'class': 'all'}).get_text('\n').strip())
     if summary is None:
         summary = try_except(
-            lambda: bs.find(id='link-report').find('span', {'property': 'v:summary'}).get_text().strip())
+            lambda: bs.find(id='link-report').find('span', {'property': 'v:summary'}).get_text('\n').strip())
 
     # tracks
     track_list = try_except(lambda: content.find('div', {'class': 'track-list'}).get_text('\n').strip())

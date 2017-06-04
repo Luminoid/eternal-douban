@@ -1,5 +1,6 @@
 from util.logger import initialize_logger
 from util.logger import get_logger
+from db_handler.initializer import initialize_path
 from db_handler.initializer import initialize_collection
 from db_handler.initializer import initialize_user
 from downloader.downloader import download
@@ -7,6 +8,7 @@ from downloader.downloader import download
 
 def initialize():
     initialize_logger()
+    initialize_path()
     initialize_collection()
 
 

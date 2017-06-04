@@ -6,6 +6,6 @@ from downloader.getMusicCollection import get_music_collection
 
 def download(user_id):
     tracer = Tracer(user_id)
-    # get_book_collection(tracer)
-    # get_movie_collection(tracer)
+    get_book_collection(tracer)
+    get_movie_collection(tracer)
     get_music_collection(tracer)

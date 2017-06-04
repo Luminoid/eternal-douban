@@ -23,18 +23,6 @@ def get_span_val(tag, name):
     return ret
 
 
-def get_next_span_val(tag, name):
-    """Get the next sibling span's content"""
-    try:
-        ret = tag.find("span", text=re.compile(name)).next_sibling.next_sibling
-        if ret.name == 'span':
-            return ret.get_text().strip()
-        else:
-            return None
-    except AttributeError:
-        return None
-
-
 def get_list_val(tag, name):
     """Get list value from the next sibling span's content"""
     try:

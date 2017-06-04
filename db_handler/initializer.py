@@ -2,6 +2,15 @@ import os
 import sqlite3
 
 
+def initialize_path():
+    if not os.path.exists('../db/img/book'):
+        os.makedirs('../db/img/book')
+    if not os.path.exists('../db/img/movie'):
+        os.makedirs('../db/img/movie')
+    if not os.path.exists('../db/img/music'):
+        os.makedirs('../db/img/music')
+
+
 def initialize_collection():
     if not os.path.exists('../db/collection.db'):
         conn = sqlite3.connect('../db/collection.db')

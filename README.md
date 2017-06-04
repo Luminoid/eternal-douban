@@ -33,4 +33,8 @@
 
 ### Music
 - 部分条目名没有用 `<span>` 标签包装，直接以 String 的形式显示
+- summary 中的 `<br>` 需要转换成换行符，但 `<wbr>` 不需要
 - 曲目内容可能分别用 `<div>` 标签包转，也可能直接以 String 的形式显示，需要格式化换行符 `re.sub(r'\s*?\n+\s*', '\n', track_list)`
+
+## TODO
+- Music summary 中的 `<wbr>` 标签会被识别为换行符

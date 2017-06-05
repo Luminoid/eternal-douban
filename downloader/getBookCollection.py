@@ -35,7 +35,7 @@ def get_book_collection(tracer):
                     url_referer = url + "?start=%s&sort=time&rating=all&filter=all&mode=grid" % str((i - 1) * 15)
                 bs = get_bs(tracer.session, url_para, url_referer)
                 if bs is not None:
-                    logger.info('[Parse]    url: %s' % url)
+                    logger.info('[Parse]    url: %s' % url_para)
                     items = bs.find(id="content").find("ul", {"class": "interest-list"}).findAll("li")
                     for item in items:
                         my_book = parse_my_book(item, status)

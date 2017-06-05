@@ -35,7 +35,7 @@ def get_music_collection(tracer):
                     url_referer = url + "?start=%s&sort=time&rating=all&filter=all&mode=grid" % str((i - 1) * 15)
                 bs = get_bs(tracer.session, url_para, url_referer)
                 if bs is not None:
-                    logger.info('[Parse]    url: %s' % url)
+                    logger.info('[Parse]    url: %s' % url_para)
                     items = bs.find(id="content").find("div", {"class": "grid-view"}).findAll("div", {"class": "item"})
                     for item in items:
                         my_music = parse_my_music(item, status)
@@ -68,7 +68,6 @@ def get_music_info(tracer, music_id, user_url):
     if bs is not None:
         try:
             music = parse_music_page(bs, url)
-            print(music)
             insert_entry(music, DATA_MUSIC)
             logger.info('[Get]      url: %s' % url)
             return True

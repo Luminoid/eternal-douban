@@ -122,7 +122,7 @@ def parse_book_page(bs, url):
     # info
     book_id = url.split('/')[-2]
     isbn13 = get_span_val(info, "ISBN")
-    title = bs.find(id="wrapper").h1.span.get_text()
+    title = bs.find(id="wrapper").h1.span.get_text().strip()
     origin_title = get_span_val(info, "原作名")
     subtitle = get_span_val(info, "副标题")
     author = get_list_val(author) if author is not None else None
@@ -133,9 +133,9 @@ def parse_book_page(bs, url):
     price = get_span_val(info, "定价")
     binding = get_span_val(info, "装帧")
     image = "img/book/%s" % img_id if img_id is not None else None
-    summary = '\n'.join(p.get_text() for p in list(summary)) if summary is not None else None
+    summary = '\n'.join(p.get_text().strip() for p in list(summary)) if summary is not None else None
     catalog = catalog
-    author_intro = '\n'.join(p.get_text() for p in list(author_intro)) \
+    author_intro = '\n'.join(p.get_text().strip() for p in list(author_intro)) \
         if author_intro is not None else None
     average_rating = rating
     ratings_count = try_except(lambda: bs.select("#interest_sectl span[property=\"v:votes\"]")[0].get_text())

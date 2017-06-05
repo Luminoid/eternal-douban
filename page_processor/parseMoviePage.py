@@ -26,7 +26,7 @@ def get_span_val(tag, name):
 def get_list_val(tag, name):
     """Get list value from the next sibling span's content"""
     try:
-        return tag.find("span", text=re.compile(name)).find_next_sibling("span", {'class': 'attrs'}).get_text()
+        return tag.find("span", text=re.compile(name)).find_next_sibling("span", {'class': 'attrs'}).get_text().strip()
     except AttributeError:
         return None
 
@@ -46,6 +46,8 @@ def get_sibling_list_val(tag, attr):
 def get_span_and_str(tag, name):
     try:
         tag = tag.find("span", text=re.compile(name))
+        if tag is None:
+            return None
     except AttributeError:
         return None
     val = ''
@@ -68,7 +70,7 @@ def parse_my_movie(item, status):
     # url
     url = info.find("li", {"class": "title"}).a["href"]
     # title
-    title = info.find("li", {"class": "title"}).a.em.get_text()
+    title = info.find("li", {"class": "title"}).a.em.get_text().strip()
     # movie_id
     movie_id_lst = url.split('/')
     movie_id = movie_id_lst[-2] if len(movie_id_lst[-1]) == 0 else movie_id_lst[-1]
@@ -76,7 +78,7 @@ def parse_my_movie(item, status):
     # status
     status = status
     # updated
-    updated = note.find("span", {"class": "date"}).get_text()
+    updated = note.find("span", {"class": "date"}).get_text().strip()
     # rating
     try:
         rating_str = note.find("span", {"class": re.compile("^rating")})["class"][0]
@@ -130,7 +132,8 @@ def parse_movie_page(bs, url, title):
             lambda: bs.find(id='link-report').find('span', {'property': 'v:summary'}).get_text().strip())
 
     # average_rating
-    rating = try_except(lambda: bs.find(id='interest_sectl').find('strong', {'property': 'v:average'}).get_text())
+    rating = try_except(
+        lambda: bs.find(id='interest_sectl').find('strong', {'property': 'v:average'}).get_text().strip())
     if rating is not None:
         if len(rating) == 0:
             rating = None

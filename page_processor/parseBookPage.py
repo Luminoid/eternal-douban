@@ -85,9 +85,15 @@ def parse_book_page(bs, url):
     # summary
     summary = try_except(lambda: related_info.find("span", text=re.compile("内容简介"))
                          .parent.next_sibling.next_sibling.findAll("div", {"class": "intro"})[-1].findAll("p"))
+    if summary is not None:
+        summary = '\n'.join(p.get_text().strip() for p in list(summary))
+        summary = re.sub(r'\s*?\n+\s*', '\n', summary)
     # author intro
     author_intro = try_except(lambda: related_info.find("span", text=re.compile("作者简介"))
                               .parent.next_sibling.next_sibling.findAll("div", {"class": "intro"})[-1].findAll("p"))
+    if author_intro is not None:
+        author_intro = '\n'.join(p.get_text().strip() for p in list(author_intro))
+        author_intro = re.sub(r'\s*?\n+\s*', '\n', author_intro)
     # catalog
     raw_catalog = try_except(lambda: related_info.find("span", text=re.compile(
         "目录")).parent.next_sibling.next_sibling.next_sibling.next_sibling)
@@ -133,10 +139,6 @@ def parse_book_page(bs, url):
     price = get_span_val(info, "定价")
     binding = get_span_val(info, "装帧")
     image = "img/book/%s" % img_id if img_id is not None else None
-    summary = '\n'.join(p.get_text().strip() for p in list(summary)) if summary is not None else None
-    catalog = catalog
-    author_intro = '\n'.join(p.get_text().strip() for p in list(author_intro)) \
-        if author_intro is not None else None
     average_rating = rating
     ratings_count = try_except(lambda: bs.select("#interest_sectl span[property=\"v:votes\"]")[0].get_text())
 

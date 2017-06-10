@@ -82,10 +82,18 @@ def parse_music_page(bs, url):
         img_id = None
 
     # summary
-    summary = try_except(lambda: bs.find(id='link-report').find('span', {'class': 'all'}).get_text('\n').strip())
+    summary = try_except(lambda: bs.find(id='link-report').find('span', {'class': 'all'}))
     if summary is None:
-        summary = try_except(
-            lambda: bs.find(id='link-report').find('span', {'property': 'v:summary'}).get_text('\n').strip())
+        summary = try_except(lambda: bs.find(id='link-report').find('span', {'property': 'v:summary'}))
+    if summary is not None:
+        for wbr in summary.findAll('wbr'):
+            wbr_previous = wbr.previous_sibling
+            wbr_next = wbr.next_sibling
+            if wbr_previous is not None and wbr_next is not None:
+                wbr_previous.string.replace_with(wbr_previous + wbr_next)
+                wbr_next.extract()
+            wbr.extract()
+        summary = re.sub(r'\s*?\n+\s*', '\n', summary.get_text('\n').strip())
 
     # tracks
     track_list = try_except(lambda: content.find('div', {'class': 'track-list'}).get_text('\n').strip())

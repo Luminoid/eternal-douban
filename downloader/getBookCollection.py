@@ -58,6 +58,7 @@ def get_book_page(tracer, user_url):
     # rescraping
     if len(failed_page) != 0:
         logger.warning('[Rescrape] Rescraping book collection')
+        tracer.reconnect()
         for book_id in failed_page:
             get_book_info(tracer, book_id, user_url)
 

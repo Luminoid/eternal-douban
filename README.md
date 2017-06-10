@@ -9,7 +9,12 @@
 ## Usages
 将用户豆瓣 id 当作参数，传入 scheduler/scheduler.py 的 main 函数中的 scrape() 即可。
 
+一个[测试账号](https://www.douban.com/people/162041699/)
+
 ## Details
+### Overall
+- 多段落文本需要格式化换行符 `re.sub(r'\s*?\n+\s*', '\n', text)`
+
 ### Book
 - 作者部分可能有以下两种代码结构
 ```
@@ -34,7 +39,7 @@
 ### Music
 - 部分条目名没有用 `<span>` 标签包装，直接以 String 的形式显示
 - summary 中的 `<br>` 需要转换成换行符，但 `<wbr>` 不需要
-- 曲目内容可能分别用 `<div>` 标签包转，也可能直接以 String 的形式显示，需要格式化换行符 `re.sub(r'\s*?\n+\s*', '\n', track_list)`
+- 曲目内容可能分别用 `<div>` 标签包转，也可能直接以 String 的形式显示
 
 ## TODO
-- Music summary 中的 `<wbr>` 标签会被识别为换行符
+- 部分作品详细页面可能无法访问

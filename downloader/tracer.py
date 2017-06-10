@@ -12,3 +12,6 @@ class Tracer:
         self.author_collection = set()
         self.celebrity_collection = set()
         self.singer_collection = set()
+
+    def reconnect(self):
+        self.session = requests.Session()

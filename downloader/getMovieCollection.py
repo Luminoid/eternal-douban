@@ -56,6 +56,7 @@ def get_movie_page(tracer, user_url):
     # rescraping
     if len(failed_page) != 0:
         logger.warning('[Rescrape] Rescraping movie collection')
+        tracer.reconnect()
         for movie_id, title in failed_page:
             get_movie_info(tracer, movie_id, user_url, title)
 

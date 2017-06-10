@@ -57,6 +57,7 @@ def get_music_page(tracer, user_url):
     # rescraping
     if len(failed_page) != 0:
         logger.warning('[Rescrape] Rescraping music collection')
+        tracer.reconnect()
         for music_id in failed_page:
             get_music_info(tracer, music_id, user_url)
 
